@@ -18,6 +18,8 @@ mod display;
 #[cfg(all(feature="alloc", feature="fmt"))]
 pub use display::InstructionTextBuffer;
 
+use crate::armv7::thumb::DecodeImmShift;
+
 // opcode, s, w, cond
 /// a struct for the combined display of an opcode and possible suffixes.
 ///
@@ -2634,8 +2636,8 @@ impl Decoder<ARMv7> for InstDecoder {
                             let op1 = (word >> 16) & 0b1111;
                             match op1 {
                                 0b0000 => {
-
-                                },
+                                    inst.opcode = Opcode::NOP;
+                                }
                                 _ => {
                                     // Move to Special register, Application level MSR (immediate) on
                                     // page A8-499
@@ -2883,7 +2885,599 @@ impl Decoder<ARMv7> for InstDecoder {
                 // |c o n d|0 1 1|x x x x|x|x x x x|x x x x|x x x x x|x x|1|x x x x|
                     // using language from A5-206: A == 1 and B == 1
                     // so this is media instructions (A5-207)
-                    return Err(DecodeError::Incomplete);
+                    let opcode = (word >> 21) & 0xf;
+                    match opcode {
+                        0b0000 if (word >> 20) & 1 == 1 => {
+                            let rn = (word >> 16) & 0xf;
+                            let rd = (word >> 12) & 0xf;
+                            let rm = word & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => Opcode::SADD16,
+                                0b0011 => Opcode::SASX,
+                                0b0101 => Opcode::SSAX,
+                                0b0111 => Opcode::SSUB16,
+                                0b1001 => Opcode::SADD8,
+                                0b1111 => Opcode::SSUB8,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b0001 if (word >> 20) & 1 == 0 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => Opcode::QADD16,
+                                0b0011 => Opcode::QASX,
+                                0b0101 => Opcode::QSAX,
+                                0b0111 => Opcode::QSUB16,
+                                0b1001 => Opcode::QADD8,
+                                0b1111 => Opcode::QSUB8,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b0001 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => Opcode::SHADD16,
+                                0b0011 => Opcode::SHASX,
+                                0b0101 => Opcode::SHSAX,
+                                0b0111 => Opcode::SHSUB16,
+                                0b1001 => Opcode::SHADD8,
+                                0b1111 => Opcode::SHSUB8,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b0010 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => Opcode::UADD16,
+                                0b0011 => Opcode::UASX,
+                                0b0101 => Opcode::USAX,
+                                0b0111 => Opcode::USUB16,
+                                0b1001 => Opcode::UADD8,
+                                0b1111 => Opcode::USUB8,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b0011 if (word >> 20) & 1 == 0 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => Opcode::UQADD16,
+                                0b0011 => Opcode::UQASX,
+                                0b0101 => Opcode::UQSAX,
+                                0b0111 => Opcode::UQSUB16,
+                                0b1001 => Opcode::UQADD8,
+                                0b1111 => Opcode::UQSUB8,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b0011 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => Opcode::UHADD16,
+                                0b0011 => Opcode::UHASX,
+                                0b0101 => Opcode::UHSAX,
+                                0b0111 => Opcode::UHSUB16,
+                                0b1001 => Opcode::UHADD8,
+                                0b1111 => Opcode::UHSUB8,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b0100 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            let rotate = ((word >> 10) & 0b11) << 3;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0111 => {
+                                    if rn == 0b1111 {
+                                        Opcode::SXTB16
+                                    } else {
+                                        Opcode::SXTAB16
+                                    }
+                                }
+                                0b1011 => Opcode::SEL,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            match inst.opcode {
+                                Opcode::SXTB16 => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::SXTAB16 => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rn as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::SEL => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rn as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                _ => unreachable!(),
+                            };
+                        }
+                        0b0101 if (word >> 4) & 0x11 == 0b01 => {
+                            let rd = (word >> 12) & 0xf;
+                            let sat_imm = (word >> 16) & 0xf;
+                            let rn = word & 0xf;
+                            let imm5 = (word >> 7) & 0b11111;
+                            let sh = word >> 6 & 1;
+                            let shift = DecodeImmShift(rn as u8, (sh << 1) as u8, imm5 as u8);
+                            inst.opcode = Opcode::SSAT;
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Imm32(sat_imm),
+                                Operand::RegShift(shift),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ];
+                        }
+                        0b0101 if (word >> 20) & 1 == 0 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            let rotate = ((word >> 10) & 0b11) << 3;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0011 => Opcode::SSAT16,
+                                0b0111 => {
+                                    if rn == 0b1111 {
+                                        Opcode::SXTB
+                                    } else {
+                                        Opcode::SXTAB
+                                    }
+                                }
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            match inst.opcode {
+                                Opcode::SXTB => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::SXTAB => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rn as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::SSAT16 => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Imm32(rn), //sat_imm
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                _ => unreachable!(),
+                            };
+                        }
+                        0b0101 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            let rotate = ((word >> 10) & 0b11) << 3;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0011 => Opcode::REV,
+                                0b0111 => {
+                                    if rn == 0b1111 {
+                                        Opcode::SXTH
+                                    } else {
+                                        Opcode::SXTAH
+                                    }
+                                }
+                                0b1011 => Opcode::REV16,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            match inst.opcode {
+                                Opcode::SXTH => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::SXTAH => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rn as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::REV | Opcode::REV16 => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                _ => unreachable!(),
+                            };
+                        }
+                        0b0110 => {
+                            let rd = (word >> 12) & 0b1111;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            let rotate = ((word >> 10) & 0b11) << 3;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0111 => {
+                                    if rn == 0b1111 {
+                                        Opcode::UXTB16
+                                    } else {
+                                        Opcode::UXTAB16
+                                    }
+                                }
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            match inst.opcode {
+                                Opcode::UXTB16 => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::UXTAB16 => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rn as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                _ => unreachable!(),
+                            };
+                        }
+                        0b0111 if (word >> 4) & 0x11 == 0b01 => {
+                            let rd = (word >> 12) & 0xf;
+                            let sat_imm = (word >> 16) & 0xf;
+                            let rn = word & 0xf;
+                            let imm5 = (word >> 7) & 0b11111;
+                            let sh = word >> 6 & 1;
+                            let shift = DecodeImmShift(rn as u8, (sh << 1) as u8, imm5 as u8);
+                            inst.opcode = Opcode::USAT;
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Imm32(sat_imm),
+                                Operand::RegShift(shift),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ];
+                        }
+                        0b0111 if (word >> 20) & 1 == 0 => {
+                            let rd = (word >> 12) & 0b1111;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            let rotate = ((word >> 10) & 0b11) << 3;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0011 => Opcode::USAT16,
+                                0b0111 => {
+                                    if rn == 0b1111 {
+                                        Opcode::UXTB
+                                    } else {
+                                        Opcode::UXTAB
+                                    }
+                                }
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            match inst.opcode {
+                                Opcode::UXTB => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::UXTAB => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rn as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::USAT16 => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Imm32(rn),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                _ => unreachable!(),
+                            };
+                        }
+                        0b0111 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 12) & 0b1111;
+                            let rn = (word >> 16) & 0xf;
+                            let rm = word & 0xf;
+                            let rotate = ((word >> 10) & 0b11) << 3;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0011 => Opcode::RBIT,
+                                0b0111 => {
+                                    if rn == 0x1111 {
+                                        Opcode::UXTH
+                                    } else {
+                                        Opcode::UXTAH
+                                    }
+                                }
+                                0b1011 => Opcode::REVSH,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            match inst.opcode {
+                                Opcode::UXTH => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::UXTAH => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rn as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Imm32(rotate),
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                Opcode::RBIT | Opcode::REVSH => {
+                                    inst.operands = [
+                                        Operand::Reg(Reg::from_u8(rd as u8)),
+                                        Operand::Reg(Reg::from_u8(rm as u8)),
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                        Operand::Nothing,
+                                    ]
+                                }
+                                _ => unreachable!(),
+                            };
+                        }
+                        0b1000 if (word >> 20) & 1 == 0 => {
+                            let rd = (word >> 16) & 0xf;
+                            let rn = word & 0xf;
+                            let rm = (word >> 8) & 0xf;
+                            let ra = (word >> 12) & 0xf;
+                            let m = (word >> 5) & 1;
+                            inst.opcode = match ra {
+                                0b1111 => match (word >> 6) & 0b11 {
+                                    0b00 => Opcode::SMUAD(m == 1),
+                                    0b01 => Opcode::SMUSD(m == 1),
+                                    _ => return Err(DecodeError::InvalidOperand),
+                                },
+                                _ => Opcode::SMLAD(m == 1),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Reg(Reg::from_u8(ra as u8)),
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b1000 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 16) & 0xf;
+                            let rn = word & 0xf;
+                            let rm = (word >> 8) & 0xf;
+                            inst.opcode = Opcode::SDIV;
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b1001 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 16) & 0xf;
+                            let rn = word & 0xf;
+                            let rm = (word >> 8) & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => Opcode::UDIV,
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Nothing,
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b1010 if (word >> 20) & 1 == 1 => {
+                            let rd = (word >> 16) & 0xf;
+                            let rn = word & 0xf;
+                            let rm = (word >> 8) & 0xf;
+                            let ra = (word >> 12) & 0xf;
+                            let r = (word >> 5) & 1;
+                            inst.opcode = match ra {
+                                0b1111 => Opcode::SMMUL(r == 1),
+                                _ => match (word >> 6) & 0b11 {
+                                    0b00 => Opcode::SMMLA(r == 1),
+                                    0b11 => Opcode::SMMLS(r == 1),
+                                    _ => return Err(DecodeError::InvalidOpcode),
+                                },
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Reg(Reg::from_u8(ra as u8)),
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b1100 => {
+                            let rd = (word >> 16) & 0xf;
+                            let rn = word & 0xf;
+                            let rm = (word >> 8) & 0xf;
+                            let ra = (word >> 12) & 0xf;
+                            inst.opcode = match (word >> 4) & 0xf {
+                                0b0001 => {
+                                    if ra == 0b1111 {
+                                        Opcode::USAD8
+                                    } else {
+                                        Opcode::USADA8
+                                    }
+                                }
+                                _ => return Err(DecodeError::InvalidOpcode),
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Reg(Reg::from_u8(rm as u8)),
+                                Operand::Reg(Reg::from_u8(ra as u8)),
+                                Operand::Nothing,
+                            ]
+                        }
+                        0b1101 => {
+                            let rd = (word >> 12) & 0xf;
+                            let rn = word & 0xf;
+                            let lsb = (word >> 7) & 0xf;
+                            let widthm1 = (word >> 16) & 0xf;
+                            inst.opcode = Opcode::SBFX;
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Imm32(lsb),
+                                Operand::Imm32(widthm1),
+                                Operand::Nothing,
+                            ];
+                        }
+                        0b1110 => {
+                            let rd = (word >> 12) & 0b1111;
+                            let rn = word & 0b1111;
+                            let lsb = (word >> 7) & 0b11111;
+                            let msb = (word >> 16) & 0b11111;
+                            inst.opcode = match rn {
+                                // BFC in A8-334
+                                0b1111 => Opcode::BFC,
+                                _ => Opcode::BFI,
+                            };
+                            inst.operands = [
+                                Operand::Reg(Reg::from_u8(rd as u8)),
+                                Operand::Reg(Reg::from_u8(rn as u8)),
+                                Operand::Imm32(lsb),
+                                Operand::Imm32(msb),
+                                Operand::Nothing,
+                            ];
+                        }
+                        0b1111 => match (word >> 4) & 0b111 {
+                            0b101 => {
+                                let rd = (word >> 12) & 0xf;
+                                let rn = word & 0xf;
+                                let lsb = (word >> 7) & 0b11111;
+                                let widthm1 = (word >> 16) & 0b11111;
+                                inst.opcode = Opcode::UBFX;
+                                inst.operands = [
+                                    Operand::Reg(Reg::from_u8(rd as u8)),
+                                    Operand::Reg(Reg::from_u8(rn as u8)),
+                                    Operand::Imm32(lsb),
+                                    Operand::Imm32(widthm1),
+                                    Operand::Nothing,
+                                ];
+                            }
+                            0b111 => {
+                                let imm12 = (word >> 8) & 0xfff;
+                                let imm4 = word & 0xf;
+                                inst.opcode = Opcode::UDF;
+                                inst.operands = [
+                                    Operand::Imm32((imm12) << 4 | imm4),
+                                    Operand::Nothing,
+                                    Operand::Nothing,
+                                    Operand::Nothing,
+                                    Operand::Nothing,
+                                ];
+                            }
+                            _ => unreachable!(),
+                        },
+                        _ => unreachable!(),
+                    }
                 } else {
                 // |c o n d|0 1 1|x x x x|x|x x x x|x x x x|x x x x x|x x|0|x x x x|
                     // instructions here are A == 1, B == 0 in A5-206

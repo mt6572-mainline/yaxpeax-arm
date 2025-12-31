@@ -57,7 +57,7 @@ fn ThumbExpandImm_C(imm: u16) -> Result<u32, DecodeError> {
 }
 
 #[allow(non_snake_case)]
-fn DecodeImmShift(reg: u8, ty: u8, imm5: u8) -> RegShift {
+pub fn DecodeImmShift(reg: u8, ty: u8, imm5: u8) -> RegShift {
     let imm = match ty {
         0b00 => { imm5 },
         0b01 => {
@@ -2882,7 +2882,7 @@ pub fn decode_into<T: Reader<<ARMv7 as Arch>::Address, <ARMv7 as Arch>::Word>>(d
                                     ][op1];
 
                                     let rm = lower2[..4].load::<u8>();
-                                    let rotate = lower2[1..3].load::<u8>() << 2;
+                                    let rotate = lower2[4..6].load::<u8>() << 3;
                                     let rd = lower2[8..12].load::<u8>();
 
                                     inst.opcode = op;
@@ -2903,7 +2903,7 @@ pub fn decode_into<T: Reader<<ARMv7 as Arch>::Address, <ARMv7 as Arch>::Word>>(d
                                     ][op1];
 
                                     let rm = lower2[..4].load::<u8>();
-                                    let rotate = lower2[1..3].load::<u8>() << 2;
+                                    let rotate = lower2[4..6].load::<u8>() << 3;
                                     let rd = lower2[8..12].load::<u8>();
 
                                     inst.opcode = op;
