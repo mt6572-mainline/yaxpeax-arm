@@ -247,16 +247,16 @@ pub enum Opcode {
     UQSUB8,
     UHSUB8,
 
-    SMLSD,
-    SMMLA,
-    SMMLS,
+    SMLSD(bool),
+    SMMLA(bool),
+    SMMLS(bool),
     USADA8,
     USAD8,
-    SMLAD,
-    SMUSD,
-    SMMUL,
+    SMLAD(bool),
+    SMUSD(bool),
+    SMMUL(bool),
     SMULW(bool),
-    SMUAD,
+    SMUAD(bool),
     SDIV,
     UDIV,
     SMLALD(bool),
@@ -2905,7 +2905,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
                                 Operand::Nothing,
-                                Operand::Nothing,
                             ]
                         }
                         0b0001 if (word >> 20) & 1 == 0 => {
@@ -2925,7 +2924,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rd as u8)),
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
-                                Operand::Nothing,
                                 Operand::Nothing,
                             ]
                         }
@@ -2947,7 +2945,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
                                 Operand::Nothing,
-                                Operand::Nothing,
                             ]
                         }
                         0b0010 if (word >> 20) & 1 == 1 => {
@@ -2967,7 +2964,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rd as u8)),
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
-                                Operand::Nothing,
                                 Operand::Nothing,
                             ]
                         }
@@ -2989,7 +2985,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
                                 Operand::Nothing,
-                                Operand::Nothing,
                             ]
                         }
                         0b0011 if (word >> 20) & 1 == 1 => {
@@ -3009,7 +3004,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rd as u8)),
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
-                                Operand::Nothing,
                                 Operand::Nothing,
                             ]
                         }
@@ -3036,7 +3030,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
                                         Operand::Nothing,
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::SXTAB16 => {
@@ -3045,7 +3038,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rn as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::SEL => {
@@ -3053,7 +3045,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rd as u8)),
                                         Operand::Reg(Reg::from_u8(rn as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
-                                        Operand::Nothing,
                                         Operand::Nothing,
                                     ]
                                 }
@@ -3072,7 +3063,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rd as u8)),
                                 Operand::Imm32(sat_imm),
                                 Operand::RegShift(shift),
-                                Operand::Nothing,
                                 Operand::Nothing,
                             ];
                         }
@@ -3099,7 +3089,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
                                         Operand::Nothing,
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::SXTAB => {
@@ -3108,7 +3097,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rn as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::SSAT16 => {
@@ -3116,7 +3104,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rd as u8)),
                                         Operand::Imm32(rn), //sat_imm
                                         Operand::Reg(Reg::from_u8(rm as u8)),
-                                        Operand::Nothing,
                                         Operand::Nothing,
                                     ]
                                 }
@@ -3147,7 +3134,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
                                         Operand::Nothing,
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::SXTAH => {
@@ -3156,14 +3142,12 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rn as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::REV | Opcode::REV16 => {
                                     inst.operands = [
                                         Operand::Reg(Reg::from_u8(rd as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
-                                        Operand::Nothing,
                                         Operand::Nothing,
                                         Operand::Nothing,
                                     ]
@@ -3193,7 +3177,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
                                         Operand::Nothing,
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::UXTAB16 => {
@@ -3202,7 +3185,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rn as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
-                                        Operand::Nothing,
                                     ]
                                 }
                                 _ => unreachable!(),
@@ -3220,7 +3202,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rd as u8)),
                                 Operand::Imm32(sat_imm),
                                 Operand::RegShift(shift),
-                                Operand::Nothing,
                                 Operand::Nothing,
                             ];
                         }
@@ -3247,7 +3228,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
                                         Operand::Nothing,
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::UXTAB => {
@@ -3256,7 +3236,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rn as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::USAT16 => {
@@ -3264,7 +3243,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rd as u8)),
                                         Operand::Imm32(rn),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
-                                        Operand::Nothing,
                                         Operand::Nothing,
                                     ]
                                 }
@@ -3295,7 +3273,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
                                         Operand::Nothing,
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::UXTAH => {
@@ -3304,14 +3281,12 @@ impl Decoder<ARMv7> for InstDecoder {
                                         Operand::Reg(Reg::from_u8(rn as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
                                         Operand::Imm32(rotate),
-                                        Operand::Nothing,
                                     ]
                                 }
                                 Opcode::RBIT | Opcode::REVSH => {
                                     inst.operands = [
                                         Operand::Reg(Reg::from_u8(rd as u8)),
                                         Operand::Reg(Reg::from_u8(rm as u8)),
-                                        Operand::Nothing,
                                         Operand::Nothing,
                                         Operand::Nothing,
                                     ]
@@ -3338,7 +3313,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
                                 Operand::Reg(Reg::from_u8(ra as u8)),
-                                Operand::Nothing,
                             ]
                         }
                         0b1000 if (word >> 20) & 1 == 1 => {
@@ -3350,7 +3324,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rd as u8)),
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
-                                Operand::Nothing,
                                 Operand::Nothing,
                             ]
                         }
@@ -3366,7 +3339,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rd as u8)),
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
-                                Operand::Nothing,
                                 Operand::Nothing,
                             ]
                         }
@@ -3389,7 +3361,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
                                 Operand::Reg(Reg::from_u8(ra as u8)),
-                                Operand::Nothing,
                             ]
                         }
                         0b1100 => {
@@ -3412,7 +3383,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Reg(Reg::from_u8(rm as u8)),
                                 Operand::Reg(Reg::from_u8(ra as u8)),
-                                Operand::Nothing,
                             ]
                         }
                         0b1101 => {
@@ -3426,7 +3396,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Imm32(lsb),
                                 Operand::Imm32(widthm1),
-                                Operand::Nothing,
                             ];
                         }
                         0b1110 => {
@@ -3444,7 +3413,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 Operand::Reg(Reg::from_u8(rn as u8)),
                                 Operand::Imm32(lsb),
                                 Operand::Imm32(msb),
-                                Operand::Nothing,
                             ];
                         }
                         0b1111 => match (word >> 4) & 0b111 {
@@ -3459,7 +3427,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                     Operand::Reg(Reg::from_u8(rn as u8)),
                                     Operand::Imm32(lsb),
                                     Operand::Imm32(widthm1),
-                                    Operand::Nothing,
                                 ];
                             }
                             0b111 => {
@@ -3468,7 +3435,6 @@ impl Decoder<ARMv7> for InstDecoder {
                                 inst.opcode = Opcode::UDF;
                                 inst.operands = [
                                     Operand::Imm32((imm12) << 4 | imm4),
-                                    Operand::Nothing,
                                     Operand::Nothing,
                                     Operand::Nothing,
                                     Operand::Nothing,

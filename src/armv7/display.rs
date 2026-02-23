@@ -808,20 +808,20 @@ impl <T: fmt::Write, Y: YaxColors> Colorize<T, Y> for ConditionedOpcode {
             Opcode::MLS |
             Opcode::UMULL |
             Opcode::UMLAL |
-            Opcode::SMLSD |
-            Opcode::SMMLA |
-            Opcode::SMMLS |
+            Opcode::SMLSD(_) |
+            Opcode::SMMLA(_) |
+            Opcode::SMMLS(_) |
             Opcode::USADA8 |
             Opcode::USAD8 |
             Opcode::SDIV |
             Opcode::UDIV |
             Opcode::SMLALD(_) |
             Opcode::SMLSLD(_) |
-            Opcode::SMLAD |
-            Opcode::SMUSD |
-            Opcode::SMMUL |
+            Opcode::SMLAD(_) |
+            Opcode::SMUSD(_) |
+            Opcode::SMMUL(_) |
             Opcode::SMULW(_) |
-            Opcode::SMUAD |
+            Opcode::SMUAD(_) |
             Opcode::SMULL |
             Opcode::SMUL(_, _) |
             Opcode::SMAL(_, _) |
@@ -1099,15 +1099,15 @@ impl Opcode {
             Opcode::SMLALD(false) => { "smlaldb" },
             Opcode::SMLSLD(true) => { "smlsldt" },
             Opcode::SMLSLD(false) => { "smlsldb" },
-            Opcode::SMLSD => { "smlsd" },
-            Opcode::SMMLA => { "smmla" },
-            Opcode::SMMLS => { "smmls" },
+            Opcode::SMLSD(_) => { "smlsd" },
+            Opcode::SMMLA(_) => { "smmla" },
+            Opcode::SMMLS(_) => { "smmls" },
             Opcode::USADA8 => { "usada8" },
             Opcode::USAD8 => { "usad8" },
-            Opcode::SMLAD => { "smlad" },
-            Opcode::SMUSD => { "smusd" },
-            Opcode::SMMUL => { "smmul" },
-            Opcode::SMUAD => { "smuad" },
+            Opcode::SMLAD(_) => { "smlad" },
+            Opcode::SMUSD(_) => { "smusd" },
+            Opcode::SMMUL(_) => { "smmul" },
+            Opcode::SMUAD(_) => { "smuad" },
             Opcode::TBB => { "tbb" },
             Opcode::TBH => { "tbh" },
             Opcode::UDF => { "udf" },

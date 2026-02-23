@@ -3268,11 +3268,11 @@ pub fn decode_into<T: Reader<<ARMv7 as Arch>::Address, <ARMv7 as Arch>::Word>>(d
                                     inst.opcode = [
                                         Opcode::MUL, // already handled
                                         Opcode::UDF, // already handled
-                                        Opcode::SMUAD,
+                                        Opcode::SMUAD(lower2[4]),
                                         Opcode::UDF, // already handled
-                                        Opcode::SMUSD,
-                                        Opcode::SMMUL,
-                                        Opcode::SMMLS,
+                                        Opcode::SMUSD(lower2[4]),
+                                        Opcode::SMMUL(lower2[4]),
+                                        Opcode::SMMLS(lower2[4]),
                                         Opcode::USAD8,
                                     ][op1];
                                     inst.operands = [
@@ -3331,11 +3331,11 @@ pub fn decode_into<T: Reader<<ARMv7 as Arch>::Address, <ARMv7 as Arch>::Word>>(d
                                     inst.opcode = [
                                         Opcode::MUL, // already handled
                                         Opcode::UDF, // already handled
-                                        Opcode::SMLAD,
+                                        Opcode::SMLAD(lower2[4]),
                                         Opcode::UDF, // already handled
-                                        Opcode::SMLSD,
-                                        Opcode::SMMLA,
-                                        Opcode::SMMLS,
+                                        Opcode::SMLSD(lower2[4]),
+                                        Opcode::SMMLA(lower2[4]),
+                                        Opcode::SMMLS(lower2[4]),
                                         Opcode::USADA8,
                                     ][op1];
                                     inst.operands = [
